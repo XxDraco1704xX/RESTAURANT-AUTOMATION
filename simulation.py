@@ -22,52 +22,45 @@ except mysql.connector.Error as err:
    else:
      print(err)
 
-def get_or_create_client(client_data, restaurant):
-  print('verificnado cliente')
+def get_or_create_client(client_data):
   cursor.execute( "SELECT id,names, whatsapp FROM clients WHERE names = %s",(client_data["names"],))
-  there_are_results = cursor.fetchall()    
-  if there_are_results: 
-     return_menu(restaurant)
-  else: #If client don't exists, first INSERT and then search the menu
+  results = cursor.fetchall()    
+
+  if not results: 
         query_insert = "INSERT INTO clients (names, whatsapp) VALUES (%s, %s);"
         cursor.execute(query_insert, (client_data['names'], client_data['whatsapp']))
-  
         conn.commit() 
-        return_menu(restaurant)
+        
     
 def return_menu(restaurant): 
-     
      #Seleccionar el menú diario
      """According to the restaurant data, I'll put a query for seek a generic restaurant
      menu as 'Special' with a unique price if the case is presented"""
-     """
-        CÓDIGO PARA TESTEAR CON UN SOLO MENÚ 
-        print(f"{cursor.fetchall()}") 
-         items = tuple(input('Tú pedido (ID): '))
-         calculate_price(items)"""
-     
+   
      #Show menu
      cursor.execute(
      """
      SELECT names FROM restaurants
      WHERE id = %s
      """,
-     (restaurant,),)
+     (restaurant['id'],),)
      restaurant_name = cursor.fetchone()
 
      cursor.execute('''SELECT id,category,item_name FROM menu_items
                     WHERE day=%s
                     ''',
-                    (1,))        
-        
-     print(f'¡ Hoy se come rico en {restaurant_name}! este es nuestro menú \n {cursor.fetchall()} ')
+                    (restaurant['day'],))        
+     cursor.fetchall()
+     print(
+        f'¡ Hoy se come rico en {restaurant_name}! este es nuestro menú \n {cursor.fetchall()} ')
+
      ask_order()
 
 def ask_order():
      items_ordered = input('Coloca los IDs de lo que deseas pedir:')
      items_ordered.split(' ')
-     print(items_ordered)
-     return_price(restaurant)
+
+     return_price(restaurant['id'])
 
      if return_price == 'No te he entendido, ¿podrías específicar si es para llevar o para mesa?':
        items_ordered = input("Coloca los ID's separados por comas: \n")
@@ -112,13 +105,7 @@ def return_price(restaurant):
   else:
     return 'No te he entendido, ¿podrías específicar si es para llevar o para mesa?'
 
-  """  CODE TEST FOR THE GENERIC MENU
-     cursor.execute('''
-                       SELECT price FROM menus 
-                       WHERE id = %s
-                       ''', (items))
-        print(f'Su total es {cursor.fetchall()} 
-  """
+
 
 def confirm(items_ordered):
   """
@@ -140,19 +127,39 @@ client_data = {
     'names': 'Andrea Gómez',
     'whatsapp': '+573209876543'
 }
-restaurant = 2  #Marmita 
+restaurant= {
+   'id' : 2, 'day': 1,
+}
+ #Marmita 
+user_messague = 'hola, carta por favor'
 
-messague = 'hola, carta por favor'
-def greet(messague, client_data):
+def greet(user_messague, client_data, restaurant_data):
+ get_or_create_client(client_data)
 
- KEY_WORDS = ['menú','menu','carta','comidas','comida']
- if any(w for w in KEY_WORDS) in messague.lower().split():    
-   get_or_create_client(client_data, restaurant) #Check
+ KEY_WORDS = {'menú','menu','carta','comidas','comida'}
+ if any(w in user_messague.lower() for w in KEY_WORDS): 
+   print(f'Hola {client_data['names']} gracias por comunicarte con {restaurant_data['id']}')
 
+   return_menu(restaurant)
+   return 'Ok'
  else: 
+       print(f'Hola {client_data['names']}, ¿deseas el menú?')  #temporal
+       get_user_menu_request()
        return f'Hola {client_data['names']}, ¿deseas el menú?' 
- 
-greet(messague, client_data)
+
+def get_user_menu_request():
+   #input de twilio
+   menu_request = input('si/no: ')
+   if menu_request:
+      if 'si' in menu_request.lower().split(' '):
+        get_or_create_client(client_data)
+      else:
+        return 'muchas gracias'
+        #TWILIO CERRAR SESIÓN
+   else:
+       return 'has mandado un mensaje vacío \n ingresa si quieres el menú o no'
+
+greet(user_messague, client_data, restaurant)
 
 """
 if greet(messague)==f'Hola {client_data['names']}, ¿deseas el menú?':

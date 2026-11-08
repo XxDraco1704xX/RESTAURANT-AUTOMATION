@@ -17,8 +17,10 @@ client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 message = client.messages.create(
     from_='whatsapp:+17372508034',  # Tu número correcto del Sandbox
     body='¡Hola! Prueba de conexión con Python.',
-    to='whatsapp:+573222287142'      # Tu número personal verificado
+    to='whatsapp:+573113651827'      # Tu número personal verificado
 )
+
 @app.route("/recibir-test", methods=["POST"])
+
 def recibir_test():
   return f"Mensaje enviado con SID: {message.sid}"
