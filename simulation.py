@@ -1,7 +1,7 @@
 import os
 import time
 import mysql.connector; from mysql.connector import errorcode
-
+import string
 try:
 
     conn = mysql.connector.connect(
@@ -131,14 +131,18 @@ restaurant= {
    'id' : 2, 'day': 1,
 }
  #Marmita 
-user_messague = 'hola, carta por favor'
+import string
+user_messague = 'hola, carta por favor.'
+standarized_messague = user_messague.lower()
+standarized_messague.translate(str.maketrans('','', string.punctuation))
 
+print(standarized_messague)
 def greet(user_messague, client_data, restaurant_data):
  get_or_create_client(client_data)
 
  KEY_WORDS = {'menú','menu','carta','comidas','comida'}
  if any(w in user_messague.lower() for w in KEY_WORDS): 
-   print(f'Hola {client_data['names']} gracias por comunicarte con {restaurant_data['id']}')
+   print(f'Hola {client_data["names"]} gracias por comunicarte con {restaurant_data['id']}')
 
    return_menu(restaurant)
    return 'Ok'
